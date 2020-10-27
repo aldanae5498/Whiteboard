@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="konva/konva.min.js"></script>
+    <meta charset="utf-8" />
+    <title>Konva Drop DOM element Demo</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #f0f0f0;
+      }
+
+      #container {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+
+      p {
+        margin: 4px;
+      }
+
+      #drag-items img {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <p>
+      Drag&drop yoda into the grey area.
+    </p>
+    <div id="drag-items">
+      <img src="./img/yoda.jpeg" draggable="true" />
+      <img src="./img/darth-vader.jpg" draggable="true" />
+    </div>
+    <div id="container"></div>
+    <script>
+
+      // How to drag and drop DOM image into the canvas
+
+      var width = window.innerWidth;
+      var height = window.innerHeight;
+
+      var stage = new Konva.Stage({
+        container: 'container',
+        width: width,
+        height: height,
+      });
+      var layer = new Konva.Layer();
+      stage.add(layer);
+
+      // what is url of dragging element?
+      var itemURL = '';
+      document
+        .getElementById('drag-items')
+        .addEventListener('dragstart', function (e) {
+          itemURL = e.target.src;
+        });
+
+      var con = stage.container();
+      con.addEventListener('dragover', function (e) {
+        e.preventDefault(); // !important
+      });
+
+      con.addEventListener('drop', function (e) {
+        e.preventDefault();
+        // now we need to find pointer position
+        // we can't use stage.getPointerPosition() here, because that event
+        // is not registered by Konva.Stage
+        // we can register it manually:
+        stage.setPointersPositions(e);
+
+        Konva.Image.fromURL(itemURL, function (image) {
+
+          // Ancho y alto de las imágenes:
+          image.setAttrs({
+            width: 100,
+            height: 100,
+            scaleX: 0.8,
+            scaleY: 0.8
+          })          
+
+          layer.add(image);
+
+          image.position(stage.getPointerPosition());
+          image.draggable(true);
+
+          layer.draw();
+        });
+      });
+
+var circle = new Konva.Circle({
+x: stage.getWidth() / 2,
+y: stage.getHeight() / 2,
+radius: 40,
+fill: 'green',
+stroke: 'black',
+strokeWidth: 2,
+draggable: true
+});
+var circleA = new Konva.Circle({
+x: stage.getWidth() / 5,
+y: stage.getHeight() / 5,
+radius: 30,
+fill: 'red',
+stroke: 'black',
+strokeWidth: 2,
+draggable: true
+});
+var arrow = new Konva.Arrow({
+points: [circle.getX(), circle.getY(), circleA.getX(), circleA.getY()],
+pointerLength: 10,
+pointerWidth: 10,
+fill: 'black',
+stroke: 'black',
+strokeWidth: 4
+});
+function adjustPoint(e){
+var p=[circle.getX(), circle.getY(), circleA.getX(), circleA.getY()];
+arrow.setPoints(p);
+layer.draw();
+}
+circle.on('dragmove', adjustPoint);
+circleA.on('dragmove', adjustPoint);
+layer.add(circleA);
+// add the shape to the layer
+layer.add(circle);
+layer.add(arrow);
+// add the layer to the stage
+stage.add(layer);
+
+    </script>
+  </body>
+</html>
